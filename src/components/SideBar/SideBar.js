@@ -6,6 +6,13 @@ function SideBar({ onCategorySelect }) {
   const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    fetch('http://localhost:9999/categories')
+      .then((res) => res.json())
+      .then((data) => setCategories(data))
+      .catch((err) => console.error('Failed to fetch categories:', err));
+  }, []);
+
   return (
     <div
       className="d-flex flex-column text-white"
