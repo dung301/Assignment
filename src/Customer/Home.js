@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Row,
   Col,
@@ -17,14 +16,20 @@ function Home({ addToCart, searchTerm, setMenu }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:9999/menu")
-      .then((res) => {
-        setMenuItems(res.data);
-        setMenu(res.data);
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
+    async function fetchMenu() {
+      try {
+        const res = await fetch("http://localhost:9999/menu");
+        const data = await res.json();
+        setMenuItems(data);
+        setMenu(data);
+      } catch (err) {
+        console.error("Fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMenu();
   }, []);
 
   const filteredMenuItems = menuItems.filter((item) => {
