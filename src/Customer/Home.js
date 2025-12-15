@@ -1,45 +1,33 @@
 import React, { useState, useEffect } from "react";
-import {
-  Row,
-  Col,
-  Spinner,
-  Alert,
-  Container,
-  Card,
-  Button,
-} from "react-bootstrap";
+import axios from "axios";
+import { Row, Col, Spinner, Alert, Container } from "react-bootstrap";
+import CardFood from "../components/CardFood/CardFood";
 import SideBar from "../components/SideBar/SideBar";
 
 function Home({ addToCart, searchTerm, setMenu }) {
+  // vừa bổ sung searchTerm
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
-    async function fetchMenu() {
-      try {
-        const res = await fetch("http://localhost:9999/menu");
-        const data = await res.json();
-        setMenuItems(data);
-        setMenu(data);
-      } catch (err) {
-        console.error("Fetch error:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchMenu();
+    axios
+      .get("http://localhost:9999/menu")
+      .then((res) => {
+        setMenuItems(res.data);
+        setMenu(res.data);
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
   }, []);
 
+  // Lọc các mục thực đơn theo từ khóa tìm kiếm và danh mục đã chọn
   const filteredMenuItems = menuItems.filter((item) => {
     const matchSearch = item.name
       ?.toLowerCase()
       .includes(searchTerm.toLowerCase());
-
     const matchCategory =
       selectedCategory === null || item.categoryId === selectedCategory;
-
     return matchSearch && matchCategory;
   });
 
@@ -48,8 +36,7 @@ function Home({ addToCart, searchTerm, setMenu }) {
       <Col lg={2} md={3}>
         <SideBar onCategorySelect={setSelectedCategory} />
       </Col>
-
-      <Col lg={10} md={9}>
+      <Col lg={10} md={9} gap="4">
         <Container fluid className="py-4 px-4">
           {loading ? (
             <div
@@ -64,36 +51,14 @@ function Home({ addToCart, searchTerm, setMenu }) {
             <Row className="gx-4 gy-4">
               {filteredMenuItems.map((item) => (
                 <Col key={item.id} lg={6} md={6}>
-                  <Card className="shadow-sm">
-                    <Card.Img
-                      variant="top"
-                      src={item.image}
-                      style={{ height: "220px", objectFit: "cover" }}
-                    />
-
-                    <Card.Body>
-                      <Card.Title>{item.name}</Card.Title>
-
-                      <Card.Text className="text-muted">
-                        Price: {item.price}₫ <br />
-                        Serve time: {item.serveTime} mins
-                      </Card.Text>
-
-                      <Button
-                        variant="primary"
-                        onClick={() =>
-                          addToCart({
-                            id: item.id,
-                            name: item.name,
-                            price: item.price,
-                            image: item.image,
-                          })
-                        }
-                      >
-                        Add to Cart
-                      </Button>
-                    </Card.Body>
-                  </Card>
+                  <CardFood
+                    id={item.id}
+                    name={item.name}
+                    price={item.price}
+                    image={item.image}
+                    addToCart={addToCart}
+                    serveTime={item.serveTime}
+                  />
                 </Col>
               ))}
             </Row>
